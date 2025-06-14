@@ -61,6 +61,10 @@ class CaloriesTrackerViewModel(
         repository.addExercise(exercise)
     }
 
+    fun removeExerciseItem(exerciseId: String) {
+        repository.removeExerciseItem(exerciseId)
+    }
+
     fun updateWaterIntake(amount: Int) {
         repository.updateWaterIntake(amount)
     }

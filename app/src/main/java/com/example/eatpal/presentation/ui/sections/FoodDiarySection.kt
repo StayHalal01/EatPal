@@ -27,7 +27,8 @@ fun DiarySection(
     onAddFood: () -> Unit,
     onAddExercise: () -> Unit,
     onUpdateWater: (Int) -> Unit,
-    onRemoveFood: (String) -> Unit
+    onRemoveFood: (String) -> Unit,
+    onRemoveExercise: (String) -> Unit
 ) {
     var selectedTab by remember { mutableStateOf("EAT") }
 
@@ -68,7 +69,8 @@ fun DiarySection(
 
                 "EXERCISE" -> ExerciseContent(
                     exercises = exercises,
-                    onAddExercise = onAddExercise
+                    onAddExercise = onAddExercise,
+                    onRemoveExercise = onRemoveExercise
                 )
             }
         }
@@ -219,7 +221,8 @@ fun FoodContent(
 @Composable
 fun ExerciseContent(
     exercises: List<ExerciseItem>,
-    onAddExercise: () -> Unit
+    onAddExercise: () -> Unit,
+    onRemoveExercise: (String) -> Unit
 ) {
     Column {
         exercises.forEach { exercise ->
@@ -229,7 +232,7 @@ fun ExerciseContent(
                 subtitle = "${exercise.duration} minutes",
                 calories = exercise.caloriesBurned,
                 onAdd = null,
-                onRemove = null
+                onRemove = { onRemoveExercise(exercise.id) }
             )
         }
 

@@ -33,6 +33,12 @@ class CaloriesRepository {
         )
     }
 
+    fun removeExerciseItem(exerciseId: String) {
+        _currentEntry.value = _currentEntry.value.copy(
+            exercises = _currentEntry.value.exercises.filter { it.id != exerciseId }
+        )
+    }
+
     fun updateWaterIntake(amount: Int) {
         _currentEntry.value = _currentEntry.value.copy(
             waterIntake = amount.coerceAtLeast(0)

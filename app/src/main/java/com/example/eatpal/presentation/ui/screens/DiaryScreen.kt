@@ -54,7 +54,8 @@ fun DiaryScreen(
                 onAddFood = onAddFood,
                 onAddExercise = onAddExercise,
                 onUpdateWater = viewModel::updateWaterIntake,
-                onRemoveFood = viewModel::removeFoodItem
+                onRemoveFood = viewModel::removeFoodItem,
+                onRemoveExercise = viewModel::removeExerciseItem
             )
         }
     }
