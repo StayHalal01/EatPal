@@ -74,8 +74,34 @@ class CaloriesTrackerViewModel(
         calendar.time = _currentDate.value
         calendar.add(Calendar.DAY_OF_MONTH, if (forward) 1 else -1)
         val newDate = calendar.time
+
+        // Prevent future dates
+        val today = Calendar.getInstance()
+        today.set(Calendar.HOUR_OF_DAY, 23)
+        today.set(Calendar.MINUTE, 59)
+        today.set(Calendar.SECOND, 59)
+
+        if (newDate.after(today.time)) {
+            return // Don't allow future dates
+        }
+
         _currentDate.value = newDate
         repository.updateEntryDate(newDate)
+    }
+
+    fun setSpecificDate(date: Date) {
+        // Prevent future dates
+        val today = Calendar.getInstance()
+        today.set(Calendar.HOUR_OF_DAY, 23)
+        today.set(Calendar.MINUTE, 59)
+        today.set(Calendar.SECOND, 59)
+
+        if (date.after(today.time)) {
+            return // Don't allow future dates
+        }
+
+        _currentDate.value = date
+        repository.updateEntryDate(date)
     }
 }
 

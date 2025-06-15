@@ -22,12 +22,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.foundation.layout.Arrangement
+import java.util.Calendar
 
 @Composable
 fun DateSelector(
     currentDate: Date,
-    onNavigateDay: (Boolean) -> Unit
+    onNavigateDay: (Boolean) -> Unit,
+    onDateClick: () -> Unit = {}
 ) {
+    val today = Calendar.getInstance().time
+    val isToday = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentDate) ==
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(today)
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -45,18 +51,30 @@ fun DateSelector(
                 modifier = Modifier.clickable { onNavigateDay(false) }
             )
             Text(
-                "Today, ${
+                "${if (isToday) "Today, " else ""}${
                     SimpleDateFormat(
                         "d MMMM yyyy",
                         Locale.getDefault()
                     ).format(currentDate)
                 }",
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.clickable { onDateClick() }
             )
+
+            val nextDay = Calendar.getInstance().apply {
+                time = currentDate
+                add(Calendar.DAY_OF_MONTH, 1)
+            }.time
+
+            val canGoForward = !nextDay.after(today)
+
             Icon(
                 Icons.Default.ArrowForward,
                 contentDescription = "Next day",
-                modifier = Modifier.clickable { onNavigateDay(true) }
+                tint = if (canGoForward) Color.Unspecified else Color.Gray,
+                modifier = Modifier.clickable {
+                    if (canGoForward) onNavigateDay(true)
+                }
             )
         }
     }

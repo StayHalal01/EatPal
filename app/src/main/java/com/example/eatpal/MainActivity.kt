@@ -22,6 +22,7 @@ import com.example.eatpal.presentation.ui.dialogs.AddExerciseDialog
 import com.example.eatpal.presentation.ui.dialogs.AddFoodDialog
 import com.example.eatpal.presentation.ui.screens.DiaryScreen
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
+import com.example.eatpal.presentation.ui.dialogs.AddChoiceDialog
 import com.example.eatpal.ui.theme.EatPalTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,6 +43,7 @@ fun CaloriesTrackerApp() {
     var currentScreen by remember { mutableStateOf("diary") }
     var showAddFood by remember { mutableStateOf(false) }
     var showAddExercise by remember { mutableStateOf(false) }
+    var showAddChoiceDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
@@ -61,11 +63,11 @@ fun CaloriesTrackerApp() {
                     ) { currentScreen = "diary" }
 
                     FloatingActionButton(
-                        onClick = { showAddFood = true },
+                        onClick = { showAddChoiceDialog = true },
                         containerColor = Color(0xFF4CAF50),
                         modifier = Modifier.size(56.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Food", tint = Color.White)
+                        Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White)
                     }
 
                     BottomNavItem(
@@ -83,6 +85,20 @@ fun CaloriesTrackerApp() {
                 modifier = Modifier.padding(paddingValues),
                 onAddFood = { showAddFood = true },
                 onAddExercise = { showAddExercise = true }
+            )
+        }
+
+        if (showAddChoiceDialog) {
+            AddChoiceDialog(
+                onDismiss = { showAddChoiceDialog = false },
+                onAddFood = {
+                    showAddChoiceDialog = false
+                    showAddFood = true
+                },
+                onAddExercise = {
+                    showAddChoiceDialog = false
+                    showAddExercise = true
+                }
             )
         }
 

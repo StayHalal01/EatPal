@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.example.eatpal.presentation.ui.components.CaloriesTrackerCard
 import com.example.eatpal.presentation.ui.components.DateSelector
 import com.example.eatpal.presentation.ui.sections.DiarySection
+import com.example.eatpal.presentation.ui.dialogs.DatePickerDialog
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
 
 @Composable
@@ -22,6 +23,7 @@ fun DiaryScreen(
     val uiState by viewModel.uiState.collectAsState()
     val currentEntry by viewModel.currentEntry.collectAsState()
     val currentDate by viewModel.currentDate.collectAsState()
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -42,7 +44,8 @@ fun DiaryScreen(
         item {
             DateSelector(
                 currentDate = currentDate,
-                onNavigateDay = viewModel::navigateDay
+                onNavigateDay = viewModel::navigateDay,
+                onDateClick = { showDatePicker = true }
             )
         }
 
@@ -58,5 +61,16 @@ fun DiaryScreen(
                 onRemoveExercise = viewModel::removeExerciseItem
             )
         }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            currentDate = currentDate,
+            onDismiss = { showDatePicker = false },
+            onDateSelected = { selectedDate ->
+                viewModel.setSpecificDate(selectedDate)
+                showDatePicker = false
+            }
+        )
     }
 }
