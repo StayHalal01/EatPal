@@ -1,4 +1,4 @@
-package com.example.eatpal.presentation.ui.dialogs
+package com.example.eatpal.presentation.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +25,7 @@ import com.example.eatpal.data.model.Exercise
 import com.example.eatpal.data.model.ExerciseItem
 
 @Composable
-fun AddExerciseDialog(
+fun AddExerciseScreen(
     onDismiss: () -> Unit,
     onAddExercise: (ExerciseItem) -> Unit
 ) {

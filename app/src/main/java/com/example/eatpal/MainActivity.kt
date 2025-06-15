@@ -18,11 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.eatpal.presentation.ui.dialogs.AddExerciseDialog
 import com.example.eatpal.presentation.ui.dialogs.AddChoiceDialog
 import com.example.eatpal.presentation.ui.screens.AddFoodScreen
 import com.example.eatpal.presentation.ui.screens.DiaryScreen
 import com.example.eatpal.presentation.ui.screens.AccountScreen
+import com.example.eatpal.presentation.ui.screens.AddExerciseScreen
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
 import com.example.eatpal.ui.theme.EatPalTheme
 
@@ -57,7 +57,7 @@ fun CaloriesTrackerApp() {
             defaultCategory = selectedFoodCategory
         )
     } else if (showAddExercise) {
-        AddExerciseDialog(
+        AddExerciseScreen(
             onDismiss = { showAddExercise = false },
             onAddExercise = { exercise ->
                 viewModel.addExercise(exercise)
