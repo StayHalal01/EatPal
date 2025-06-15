@@ -126,11 +126,6 @@ fun ExerciseListScreen(
                     isSelected = selectedTab == "All",
                     onClick = { onTabSelected("All") }
                 )
-                TabButton(
-                    text = "Custom",
-                    isSelected = selectedTab == "Custom",
-                    onClick = { onTabSelected("Custom") }
-                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
