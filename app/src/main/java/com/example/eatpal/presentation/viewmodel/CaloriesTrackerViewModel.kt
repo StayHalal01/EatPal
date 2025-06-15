@@ -103,6 +103,10 @@ class CaloriesTrackerViewModel(
         _currentDate.value = date
         repository.updateEntryDate(date)
     }
+
+    fun updateDailyCalorieGoal(goal: Int) {
+        repository.updateDailyCalorieGoal(goal)
+    }
 }
 
 data class CaloriesTrackerUiState(

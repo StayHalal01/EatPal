@@ -22,6 +22,7 @@ import com.example.eatpal.presentation.ui.dialogs.AddExerciseDialog
 import com.example.eatpal.presentation.ui.dialogs.AddChoiceDialog
 import com.example.eatpal.presentation.ui.screens.AddFoodScreen
 import com.example.eatpal.presentation.ui.screens.DiaryScreen
+import com.example.eatpal.presentation.ui.screens.AccountScreen
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
 import com.example.eatpal.ui.theme.EatPalTheme
 
@@ -107,6 +108,10 @@ fun CaloriesTrackerApp() {
                         showAddFood = true
                     },
                     onAddExercise = { showAddExercise = true }
+                )
+                "account" -> AccountScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(paddingValues)
                 )
             }
 
