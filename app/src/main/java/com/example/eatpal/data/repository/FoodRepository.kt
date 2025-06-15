@@ -10,6 +10,9 @@ class FoodRepository {
         // Static favorites set that persists across repository instances
         private val _favorites = mutableSetOf<String>()
 
+        // Track when foods were added to diary (food name -> timestamp)
+        private val _recentlyAddedToDiary = mutableMapOf<String, Long>()
+
         @Volatile
         private var INSTANCE: FoodRepository? = null
 
@@ -147,5 +150,19 @@ class FoodRepository {
 
     fun removeFromFavorites(food: FoodDatabase) {
         FoodRepository._favorites.remove(food.name)
+    }
+
+    fun markAsAddedToDiary(food: FoodDatabase) {
+        FoodRepository._recentlyAddedToDiary[food.name] = System.currentTimeMillis()
+    }
+
+    fun getRecentlyAddedToDiary(): List<FoodDatabase> {
+        return foodDatabase
+            .filter { FoodRepository._recentlyAddedToDiary.containsKey(it.name) }
+            .sortedByDescending { FoodRepository._recentlyAddedToDiary[it.name] ?: 0L }
+    }
+
+    fun getDateAddedToDiary(food: FoodDatabase): Long? {
+        return FoodRepository._recentlyAddedToDiary[food.name]
     }
 }

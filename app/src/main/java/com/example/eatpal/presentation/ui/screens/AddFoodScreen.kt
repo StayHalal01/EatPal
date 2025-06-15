@@ -19,7 +19,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.LaunchedEffect
 import com.example.eatpal.data.model.FoodDatabase
 import com.example.eatpal.data.model.FoodItem
 import com.example.eatpal.data.repository.FoodRepository
@@ -31,7 +30,7 @@ fun AddFoodScreen(
     onAddFood: (FoodItem) -> Unit,
     defaultCategory: String = "Breakfast"
 ) {
-    val foodRepository = remember { FoodRepository.getInstance() }
+    val foodRepository = remember { FoodRepository() }
     var currentView by remember { mutableStateOf("list") } // "list" or "detail"
     var selectedFood by remember { mutableStateOf<FoodDatabase?>(null) }
     var searchQuery by remember { mutableStateOf("") }
@@ -188,10 +187,10 @@ fun FoodListView(
                 } else {
                     favorites.filter { it.name.contains(searchQuery, ignoreCase = true) }
                 }
-                sortFoods(filteredFavorites, sortBy)
+                sortFoods(filteredFavorites, sortBy, foodRepository)
             }
 
-            else -> sortFoods(foodRepository.searchFoods(searchQuery), sortBy)
+            else -> sortFoods(foodRepository.searchFoods(searchQuery), sortBy, foodRepository)
         }
 
         LazyColumn(
@@ -244,11 +243,6 @@ fun FoodDetailView(
     var showNutritionExpanded by remember { mutableStateOf(true) }
     var showNutrientsExpanded by remember { mutableStateOf(false) }
     var isFavorite by remember { mutableStateOf(foodRepository.isFavorite(food)) }
-
-    // Force recomposition when favorite status might have changed
-    LaunchedEffect(food.name) {
-        isFavorite = foodRepository.isFavorite(food)
-    }
 
     val categories = listOf("Breakfast", "Lunch", "Dinner", "Snack")
     val servingSizes = listOf("Small", "Medium", "Large")
@@ -600,6 +594,8 @@ fun FoodDetailView(
                         cholesterol = food.nutritionPer100g.cholesterol * baseMultiplier
                     )
                 )
+                // Mark as recently added to diary
+                foodRepository.markAsAddedToDiary(food)
                 onAddToLog(foodItem)
             },
             modifier = Modifier
@@ -655,11 +651,23 @@ fun NutrientRow(
 }
 
 // Helper function for sorting foods
-fun sortFoods(foods: List<FoodDatabase>, sortBy: String): List<FoodDatabase> {
+fun sortFoods(
+    foods: List<FoodDatabase>,
+    sortBy: String,
+    foodRepository: FoodRepository? = null
+): List<FoodDatabase> {
     return when (sortBy) {
         "A-Z" -> foods.sortedBy { it.name }
         "Z-A" -> foods.sortedByDescending { it.name }
-        "Recently Added" -> foods.reversed() // Assuming last added items are at the end
+        "Recently Added" -> {
+            if (foodRepository != null) {
+                foods.sortedByDescending { food ->
+                    foodRepository.getDateAddedToDiary(food) ?: 0L
+                }
+            } else {
+                foods // fallback to default order
+            }
+        }
         else -> foods // Most Relevant (default order)
     }
 }
