@@ -55,6 +55,14 @@ fun CaloriesTrackerApp() {
             },
             defaultCategory = selectedFoodCategory
         )
+    } else if (showAddExercise) {
+        AddExerciseDialog(
+            onDismiss = { showAddExercise = false },
+            onAddExercise = { exercise ->
+                viewModel.addExercise(exercise)
+                showAddExercise = false
+            }
+        )
     } else {
         Scaffold(
             bottomBar = {
@@ -113,16 +121,6 @@ fun CaloriesTrackerApp() {
                     onAddExercise = {
                         showAddChoiceDialog = false
                         showAddExercise = true
-                    }
-                )
-            }
-
-            if (showAddExercise) {
-                AddExerciseDialog(
-                    onDismiss = { showAddExercise = false },
-                    onAddExercise = { exercise ->
-                        viewModel.addExercise(exercise)
-                        showAddExercise = false
                     }
                 )
             }
