@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.eatpal.presentation.ui.dialogs.AddExerciseDialog
-import com.example.eatpal.presentation.ui.dialogs.AddFoodDialog
+import com.example.eatpal.presentation.ui.dialogs.AddChoiceDialog
+import com.example.eatpal.presentation.ui.screens.AddFoodScreen
 import com.example.eatpal.presentation.ui.screens.DiaryScreen
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
-import com.example.eatpal.presentation.ui.dialogs.AddChoiceDialog
 import com.example.eatpal.ui.theme.EatPalTheme
 
 class MainActivity : ComponentActivity() {
@@ -44,82 +44,88 @@ fun CaloriesTrackerApp() {
     var showAddFood by remember { mutableStateOf(false) }
     var showAddExercise by remember { mutableStateOf(false) }
     var showAddChoiceDialog by remember { mutableStateOf(false) }
+    var selectedFoodCategory by remember { mutableStateOf("Breakfast") }
 
-    Scaffold(
-        bottomBar = {
-            BottomAppBar(
-                containerColor = Color.White,
-                modifier = Modifier.height(80.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+    if (showAddFood) {
+        AddFoodScreen(
+            onDismiss = { showAddFood = false },
+            onAddFood = { food ->
+                viewModel.addFoodItem(food)
+                showAddFood = false
+            },
+            defaultCategory = selectedFoodCategory
+        )
+    } else {
+        Scaffold(
+            bottomBar = {
+                BottomAppBar(
+                    containerColor = Color.White,
+                    modifier = Modifier.height(80.dp)
                 ) {
-                    BottomNavItem(
-                        icon = Icons.Default.DateRange,
-                        label = "Diary",
-                        isSelected = currentScreen == "diary"
-                    ) { currentScreen = "diary" }
-
-                    FloatingActionButton(
-                        onClick = { showAddChoiceDialog = true },
-                        containerColor = Color(0xFF4CAF50),
-                        modifier = Modifier.size(56.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White)
-                    }
+                        BottomNavItem(
+                            icon = Icons.Default.DateRange,
+                            label = "Diary",
+                            isSelected = currentScreen == "diary"
+                        ) { currentScreen = "diary" }
 
-                    BottomNavItem(
-                        icon = Icons.Default.Person,
-                        label = "Account",
-                        isSelected = currentScreen == "account"
-                    ) { currentScreen = "account" }
+                        FloatingActionButton(
+                            onClick = { showAddChoiceDialog = true },
+                            containerColor = Color(0xFF4CAF50),
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White)
+                        }
+
+                        BottomNavItem(
+                            icon = Icons.Default.Person,
+                            label = "Account",
+                            isSelected = currentScreen == "account"
+                        ) { currentScreen = "account" }
+                    }
                 }
             }
-        }
-    ) { paddingValues ->
-        when (currentScreen) {
-            "diary" -> DiaryScreen(
-                viewModel = viewModel,
-                modifier = Modifier.padding(paddingValues),
-                onAddFood = { showAddFood = true },
-                onAddExercise = { showAddExercise = true }
-            )
-        }
+        ) { paddingValues ->
+            when (currentScreen) {
+                "diary" -> DiaryScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(paddingValues),
+                    onAddFood = { category ->
+                        selectedFoodCategory = category
+                        showAddFood = true
+                    },
+                    onAddExercise = { showAddExercise = true }
+                )
+            }
 
-        if (showAddChoiceDialog) {
-            AddChoiceDialog(
-                onDismiss = { showAddChoiceDialog = false },
-                onAddFood = {
-                    showAddChoiceDialog = false
-                    showAddFood = true
-                },
-                onAddExercise = {
-                    showAddChoiceDialog = false
-                    showAddExercise = true
-                }
-            )
-        }
+            if (showAddChoiceDialog) {
+                AddChoiceDialog(
+                    onDismiss = { showAddChoiceDialog = false },
+                    onAddFood = {
+                        showAddChoiceDialog = false
+                        selectedFoodCategory = "Breakfast"
+                        showAddFood = true
+                    },
+                    onAddExercise = {
+                        showAddChoiceDialog = false
+                        showAddExercise = true
+                    }
+                )
+            }
 
-        if (showAddFood) {
-            AddFoodDialog(
-                onDismiss = { showAddFood = false },
-                onAddFood = { food ->
-                    viewModel.addFoodItem(food)
-                    showAddFood = false
-                }
-            )
-        }
-
-        if (showAddExercise) {
-            AddExerciseDialog(
-                onDismiss = { showAddExercise = false },
-                onAddExercise = { exercise ->
-                    viewModel.addExercise(exercise)
-                    showAddExercise = false
-                }
-            )
+            if (showAddExercise) {
+                AddExerciseDialog(
+                    onDismiss = { showAddExercise = false },
+                    onAddExercise = { exercise ->
+                        viewModel.addExercise(exercise)
+                        showAddExercise = false
+                    }
+                )
+            }
         }
     }
 }

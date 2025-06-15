@@ -24,7 +24,7 @@ fun DiarySection(
     foodItems: List<FoodItem>,
     exercises: List<ExerciseItem>,
     waterIntake: Int,
-    onAddFood: () -> Unit,
+    onAddFood: (String) -> Unit,
     onAddExercise: () -> Unit,
     onUpdateWater: (Int) -> Unit,
     onRemoveFood: (String) -> Unit,
@@ -105,7 +105,7 @@ fun TabItem(
 fun FoodContent(
     foodItems: List<FoodItem>,
     waterIntake: Int,
-    onAddFood: () -> Unit,
+    onAddFood: (String) -> Unit,
     onUpdateWater: (Int) -> Unit,
     onRemoveFood: (String) -> Unit
 ) {
@@ -131,7 +131,7 @@ fun FoodContent(
                 breakfastItems.joinToString(", ") { it.name }
             else "Add breakfast items",
             calories = breakfastItems.sumOf { it.calories }.takeIf { it > 0 },
-            onAdd = onAddFood,
+            onAdd = { onAddFood("Breakfast") },
             onRemove = null
         )
 
@@ -152,7 +152,7 @@ fun FoodContent(
                 lunchItems.joinToString(", ") { it.name }
             else "Add lunch items",
             calories = lunchItems.sumOf { it.calories }.takeIf { it > 0 },
-            onAdd = onAddFood,
+            onAdd = { onAddFood("Lunch") },
             onRemove = null
         )
 
@@ -173,7 +173,7 @@ fun FoodContent(
                 dinnerItems.joinToString(", ") { it.name }
             else "Add dinner items",
             calories = dinnerItems.sumOf { it.calories }.takeIf { it > 0 },
-            onAdd = onAddFood,
+            onAdd = { onAddFood("Dinner") },
             onRemove = null
         )
 
@@ -194,7 +194,7 @@ fun FoodContent(
                 snackItems.joinToString(", ") { it.name }
             else "Add snack items",
             calories = snackItems.sumOf { it.calories }.takeIf { it > 0 },
-            onAdd = onAddFood,
+            onAdd = { onAddFood("Snack") },
             onRemove = null
         )
 
@@ -208,7 +208,7 @@ fun FoodContent(
 
         // Add more button
         TextButton(
-            onClick = onAddFood,
+            onClick = { onAddFood("Other") },
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add")
@@ -261,7 +261,7 @@ fun ExerciseContent(
 fun FoodDiarySection(
     foodItems: List<FoodItem>,
     waterIntake: Int,
-    onAddFood: () -> Unit,
+    onAddFood: (String) -> Unit,
     onUpdateWater: (Int) -> Unit,
     onRemoveFood: (String) -> Unit
 ) {

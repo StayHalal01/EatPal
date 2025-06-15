@@ -17,7 +17,7 @@ import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
 fun DiaryScreen(
     viewModel: CaloriesTrackerViewModel,
     modifier: Modifier = Modifier,
-    onAddFood: () -> Unit,
+    onAddFood: (String) -> Unit,
     onAddExercise: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
