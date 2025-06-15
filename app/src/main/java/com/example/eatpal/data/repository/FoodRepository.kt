@@ -6,6 +6,20 @@ import com.example.eatpal.data.model.ServingSize
 
 class FoodRepository {
 
+    companion object {
+        // Static favorites set that persists across repository instances
+        private val _favorites = mutableSetOf<String>()
+
+        @Volatile
+        private var INSTANCE: FoodRepository? = null
+
+        fun getInstance(): FoodRepository {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: FoodRepository().also { INSTANCE = it }
+            }
+        }
+    }
+
     // Sample food database - this will be replaced with actual API calls later
     private val foodDatabase = listOf(
         FoodDatabase(
@@ -100,9 +114,6 @@ class FoodRepository {
         )
     )
 
-    // Mutable list to track favorites
-    private val _favorites = mutableSetOf<String>()
-
     fun searchFoods(query: String): List<FoodDatabase> {
         return if (query.isEmpty()) {
             foodDatabase
@@ -118,7 +129,7 @@ class FoodRepository {
     }
 
     fun getFavorites(): List<FoodDatabase> {
-        return foodDatabase.filter { _favorites.contains(it.name) }
+        return foodDatabase.filter { FoodRepository._favorites.contains(it.name) }
     }
 
     fun getCustomFoods(): List<FoodDatabase> {
@@ -127,14 +138,14 @@ class FoodRepository {
     }
 
     fun isFavorite(food: FoodDatabase): Boolean {
-        return _favorites.contains(food.name)
+        return FoodRepository._favorites.contains(food.name)
     }
 
     fun addToFavorites(food: FoodDatabase) {
-        _favorites.add(food.name)
+        FoodRepository._favorites.add(food.name)
     }
 
     fun removeFromFavorites(food: FoodDatabase) {
-        _favorites.remove(food.name)
+        FoodRepository._favorites.remove(food.name)
     }
 }

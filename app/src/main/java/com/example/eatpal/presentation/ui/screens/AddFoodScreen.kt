@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.LaunchedEffect
 import com.example.eatpal.data.model.FoodDatabase
 import com.example.eatpal.data.model.FoodItem
 import com.example.eatpal.data.repository.FoodRepository
@@ -30,7 +31,7 @@ fun AddFoodScreen(
     onAddFood: (FoodItem) -> Unit,
     defaultCategory: String = "Breakfast"
 ) {
-    val foodRepository = remember { FoodRepository() }
+    val foodRepository = remember { FoodRepository.getInstance() }
     var currentView by remember { mutableStateOf("list") } // "list" or "detail"
     var selectedFood by remember { mutableStateOf<FoodDatabase?>(null) }
     var searchQuery by remember { mutableStateOf("") }
@@ -238,17 +239,31 @@ fun FoodDetailView(
     foodRepository: FoodRepository
 ) {
     var amount by remember { mutableStateOf("1") }
-    var selectedServing by remember { mutableStateOf(food.servingSizes.first()) }
+    var selectedServing by remember { mutableStateOf("Medium") }
     var selectedCategory by remember { mutableStateOf(defaultCategory) }
     var showNutritionExpanded by remember { mutableStateOf(true) }
     var showNutrientsExpanded by remember { mutableStateOf(false) }
     var isFavorite by remember { mutableStateOf(foodRepository.isFavorite(food)) }
 
+    // Force recomposition when favorite status might have changed
+    LaunchedEffect(food.name) {
+        isFavorite = foodRepository.isFavorite(food)
+    }
+
     val categories = listOf("Breakfast", "Lunch", "Dinner", "Snack")
+    val servingSizes = listOf("Small", "Medium", "Large")
+
+    // Calculate serving multiplier based on selected serving size
+    val servingMultiplier = when (selectedServing) {
+        "Small" -> 0.5
+        "Medium" -> 1.0
+        "Large" -> 1.5
+        else -> 1.0
+    }
 
     // Calculate nutrition values based on amount and serving size
-    val multiplier = (amount.toDoubleOrNull() ?: 1.0) * (selectedServing.grams / 100.0)
-    val totalCalories = (food.caloriesPer100g * multiplier).toInt()
+    val baseMultiplier = (amount.toDoubleOrNull() ?: 1.0) * servingMultiplier
+    val totalCalories = (food.caloriesPer100g * baseMultiplier).toInt()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -313,7 +328,7 @@ fun FoodDetailView(
                     onExpandedChange = { servingExpanded = !servingExpanded }
                 ) {
                     OutlinedTextField(
-                        value = "${selectedServing.name}, ${selectedServing.grams.toInt()}g",
+                        value = selectedServing,
                         onValueChange = { },
                         readOnly = true,
                         label = { Text("Serving Size") },
@@ -327,9 +342,9 @@ fun FoodDetailView(
                         expanded = servingExpanded,
                         onDismissRequest = { servingExpanded = false }
                     ) {
-                        food.servingSizes.forEach { serving ->
+                        servingSizes.forEach { serving ->
                             DropdownMenuItem(
-                                text = { Text("${serving.name}, ${serving.grams.toInt()}g") },
+                                text = { Text(serving) },
                                 onClick = {
                                     selectedServing = serving
                                     servingExpanded = false
@@ -458,7 +473,7 @@ fun FoodDetailView(
                                         amount = "${
                                             String.format(
                                                 "%.1f",
-                                                food.nutritionPer100g.protein * multiplier
+                                                food.nutritionPer100g.protein * baseMultiplier
                                             )
                                         }g",
                                         color = Color(0xFF4CAF50)
@@ -469,7 +484,7 @@ fun FoodDetailView(
                                         amount = "${
                                             String.format(
                                                 "%.1f",
-                                                food.nutritionPer100g.carbs * multiplier
+                                                food.nutritionPer100g.carbs * baseMultiplier
                                             )
                                         }g",
                                         color = Color(0xFF2196F3)
@@ -480,7 +495,7 @@ fun FoodDetailView(
                                         amount = "${
                                             String.format(
                                                 "%.1f",
-                                                food.nutritionPer100g.fat * multiplier
+                                                food.nutritionPer100g.fat * baseMultiplier
                                             )
                                         }g",
                                         color = Color(0xFFFF9800)
@@ -529,7 +544,7 @@ fun FoodDetailView(
                                 "${
                                     String.format(
                                         "%.1f",
-                                        food.nutritionPer100g.fiber * multiplier
+                                        food.nutritionPer100g.fiber * baseMultiplier
                                     )
                                 }mg"
                             )
@@ -538,7 +553,7 @@ fun FoodDetailView(
                                 "${
                                     String.format(
                                         "%.1f",
-                                        food.nutritionPer100g.sugar * multiplier
+                                        food.nutritionPer100g.sugar * baseMultiplier
                                     )
                                 }mg"
                             )
@@ -547,7 +562,7 @@ fun FoodDetailView(
                                 "${
                                     String.format(
                                         "%.1f",
-                                        food.nutritionPer100g.sodium * multiplier
+                                        food.nutritionPer100g.sodium * baseMultiplier
                                     )
                                 }mg"
                             )
@@ -556,7 +571,7 @@ fun FoodDetailView(
                                 "${
                                     String.format(
                                         "%.1f",
-                                        food.nutritionPer100g.cholesterol * multiplier
+                                        food.nutritionPer100g.cholesterol * baseMultiplier
                                     )
                                 }mg"
                             )
@@ -573,16 +588,16 @@ fun FoodDetailView(
                     name = food.name,
                     calories = totalCalories,
                     category = selectedCategory,
-                    servingSize = "${selectedServing.name}, ${selectedServing.grams.toInt()}g",
+                    servingSize = selectedServing,
                     amount = amount.toDoubleOrNull() ?: 1.0,
                     nutritionInfo = food.nutritionPer100g.copy(
-                        protein = food.nutritionPer100g.protein * multiplier,
-                        carbs = food.nutritionPer100g.carbs * multiplier,
-                        fat = food.nutritionPer100g.fat * multiplier,
-                        fiber = food.nutritionPer100g.fiber * multiplier,
-                        sugar = food.nutritionPer100g.sugar * multiplier,
-                        sodium = food.nutritionPer100g.sodium * multiplier,
-                        cholesterol = food.nutritionPer100g.cholesterol * multiplier
+                        protein = food.nutritionPer100g.protein * baseMultiplier,
+                        carbs = food.nutritionPer100g.carbs * baseMultiplier,
+                        fat = food.nutritionPer100g.fat * baseMultiplier,
+                        fiber = food.nutritionPer100g.fiber * baseMultiplier,
+                        sugar = food.nutritionPer100g.sugar * baseMultiplier,
+                        sodium = food.nutritionPer100g.sodium * baseMultiplier,
+                        cholesterol = food.nutritionPer100g.cholesterol * baseMultiplier
                     )
                 )
                 onAddToLog(foodItem)
