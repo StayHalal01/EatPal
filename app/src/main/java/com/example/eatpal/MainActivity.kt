@@ -2,6 +2,7 @@
 package com.example.eatpal
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import com.example.eatpal.presentation.ui.screens.AddFoodScreen
 import com.example.eatpal.presentation.ui.screens.DiaryScreen
 import com.example.eatpal.presentation.ui.screens.AccountScreen
 import com.example.eatpal.presentation.ui.screens.AddExerciseScreen
+import com.example.eatpal.presentation.ui.screens.LoginScreen
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
 import com.example.eatpal.ui.theme.EatPalTheme
 
@@ -31,7 +33,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             EatPalTheme {
-                CaloriesTrackerApp()
+                var isLoggedIn by remember { mutableStateOf(false) }
+
+                if (!isLoggedIn) {
+                    LoginScreen(
+                        onLoginClick = { email, pass ->
+                            // Add your login logic here
+                            Log.d("loginscreendebug", "coba login")
+                            // If login is successful:
+                            isLoggedIn = true
+                        },
+                        onSignUpClick = {
+                            Log.d("loginscreendebug", "coba register")
+                        }
+                    )
+                } else {
+                    CaloriesTrackerApp()
+                }
             }
         }
     }
