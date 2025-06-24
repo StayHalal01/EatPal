@@ -109,7 +109,7 @@ fun ExerciseListScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF4CAF50),
+                    focusedBorderColor = Color(0xFFFF9800),
                     unfocusedBorderColor = Color.Gray
                 )
             )
@@ -203,7 +203,7 @@ fun ExerciseDurationScreen(
                     imageVector = exercise.icon,
                     contentDescription = exercise.name,
                     modifier = Modifier.size(80.dp),
-                    tint = Color(0xFF4CAF50)
+                    tint = Color(0xFFFF9800)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -245,7 +245,7 @@ fun ExerciseDurationScreen(
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF4CAF50),
+                                    focusedBorderColor = Color(0xFFFF9800),
                                     unfocusedBorderColor = Color.Gray
                                 )
                             )
@@ -275,7 +275,7 @@ fun ExerciseDurationScreen(
                             text = "$calculatedCalories kcal",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4CAF50)
+                            color = Color(0xFFFF9800)
                         )
                     }
                 }
@@ -338,7 +338,7 @@ fun ExerciseCard(
                 imageVector = exercise.icon,
                 contentDescription = exercise.name,
                 modifier = Modifier.size(40.dp),
-                tint = Color(0xFF4CAF50)
+                tint = Color(0xFFFF9800)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -362,7 +362,7 @@ fun TabButton(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .background(
-                if (isSelected) Color(0xFF4CAF50) else Color.Transparent
+                if (isSelected) Color(0xFFFF9800) else Color.Transparent
             )
             .clickable { onClick() }
             .padding(horizontal = 24.dp, vertical = 8.dp)
