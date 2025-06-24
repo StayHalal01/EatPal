@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "942383408440",
+    "project_id": "eatpal-c5183",
+    "storage_bucket": "eatpal-c5183.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:942383408440:android:2cd846b555e32cee1b4dcd",
+        "android_client_info": {
+          "package_name": "com.example.eatpal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZs6m6oVm2QWmP8OtNeeRo43lURXVjgnU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

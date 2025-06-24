@@ -9,7 +9,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,7 +29,8 @@ import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
 @Composable
 fun AccountScreen(
     viewModel: CaloriesTrackerViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showEditCaloriesDialog by remember { mutableStateOf(false) }
@@ -259,7 +262,7 @@ fun AccountScreen(
 
                 // Sign Out Button
                 Button(
-                    onClick = { /* TODO: Implement sign out */ },
+                    onClick = onLogout,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

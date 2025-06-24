@@ -1,8 +1,8 @@
-// MainActivity.kt
 package com.example.eatpal
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -20,35 +20,95 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.eatpal.presentation.ui.dialogs.AddChoiceDialog
-import com.example.eatpal.presentation.ui.screens.AddFoodScreen
-import com.example.eatpal.presentation.ui.screens.DiaryScreen
-import com.example.eatpal.presentation.ui.screens.AccountScreen
-import com.example.eatpal.presentation.ui.screens.AddExerciseScreen
-import com.example.eatpal.presentation.ui.screens.LoginScreen
+import com.example.eatpal.presentation.ui.screens.*
+import com.example.eatpal.presentation.viewmodel.AuthViewModel
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
 import com.example.eatpal.ui.theme.EatPalTheme
 
 class MainActivity : ComponentActivity() {
+    private val TAG = "MainActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             EatPalTheme {
-                var isLoggedIn by remember { mutableStateOf(false) }
+                val authViewModel: AuthViewModel = viewModel()
+                val currentUser by authViewModel.currentUser.collectAsState()
+                val authState by authViewModel.authState.collectAsState()
 
-                if (!isLoggedIn) {
-                    LoginScreen(
-                        onLoginClick = { email, pass ->
-                            // Add your login logic here
-                            Log.d("loginscreendebug", "coba login")
-                            // If login is successful:
-                            isLoggedIn = true
-                        },
-                        onSignUpClick = {
-                            Log.d("loginscreendebug", "coba register")
+                var showRegisterScreen by remember { mutableStateOf(false) }
+                var showWelcomeScreen by remember { mutableStateOf(true) }
+                var errorMessage by remember { mutableStateOf<String?>(null) }
+
+                // Handle auth state changes
+                LaunchedEffect(authState) {
+                    when (authState) {
+                        is AuthViewModel.AuthState.Success -> {
+                            errorMessage = null
                         }
-                    )
-                } else {
-                    CaloriesTrackerApp()
+                        is AuthViewModel.AuthState.Error -> {
+                            errorMessage = (authState as AuthViewModel.AuthState.Error).message
+                            Toast.makeText(
+                                this@MainActivity,
+                                errorMessage,
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        else -> {
+                            errorMessage = null
+                        }
+                    }
+                }
+
+                when {
+                    currentUser != null -> {
+                        // User is logged in
+                        CaloriesTrackerApp(
+                            onLogout = {
+                                authViewModel.logout()
+                                showWelcomeScreen = true
+                            }
+                        )
+                    }
+                    showRegisterScreen -> {
+                        RegisterScreen(
+                            onRegisterClick = { name, email, password, height, weight ->
+                                if (authViewModel.validateEmail(email) && authViewModel.validatePassword(password)) {
+                                    authViewModel.register(name, email, password, height, weight)
+                                } else {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "Please check your email and password format",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            },
+                            onLoginClick = {
+                                showRegisterScreen = false
+                            },
+                            isLoading = authState is AuthViewModel.AuthState.Loading,
+                            errorMessage = errorMessage
+                        )
+                    }
+                    showWelcomeScreen -> {
+                        WelcomeScreen(
+                            onStartJourneyClick = {
+                                showWelcomeScreen = false
+                            }
+                        )
+                    }
+                    else -> {
+                        LoginScreen(
+                            onLoginClick = { email, password ->
+                                authViewModel.login(email, password)
+                            },
+                            onSignUpClick = {
+                                showRegisterScreen = true
+                            },
+                            isLoading = authState is AuthViewModel.AuthState.Loading,
+                            errorMessage = errorMessage
+                        )
+                    }
                 }
             }
         }
@@ -57,7 +117,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CaloriesTrackerApp() {
+fun CaloriesTrackerApp(onLogout: () -> Unit) {
     val viewModel: CaloriesTrackerViewModel = viewModel()
     var currentScreen by remember { mutableStateOf("diary") }
     var showAddFood by remember { mutableStateOf(false) }
@@ -129,7 +189,8 @@ fun CaloriesTrackerApp() {
                 )
                 "account" -> AccountScreen(
                     viewModel = viewModel,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(paddingValues),
+                    onLogout = onLogout
                 )
             }
 
