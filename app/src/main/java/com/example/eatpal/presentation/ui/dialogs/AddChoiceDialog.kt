@@ -1,5 +1,6 @@
 package com.example.eatpal.presentation.ui.dialogs
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -10,9 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.eatpal.R
 
 @Composable
 fun AddChoiceDialog(
@@ -41,11 +44,10 @@ fun AddChoiceDialog(
                             shape = CircleShape,
                             modifier = Modifier.size(80.dp)
                         ) {
-                            Icon(
-                                Icons.Default.Star,
+                            Image(
+                                painter = painterResource(id = R.drawable.add_food),
                                 contentDescription = "Add Food",
-                                tint = Color.White,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -66,11 +68,10 @@ fun AddChoiceDialog(
                             shape = CircleShape,
                             modifier = Modifier.size(80.dp)
                         ) {
-                            Icon(
-                                Icons.Default.FavoriteBorder,
+                            Image(
+                                painter = painterResource(id = R.drawable.add_exercise),
                                 contentDescription = "Add Exercise",
-                                tint = Color.White,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
