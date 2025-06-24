@@ -2,7 +2,6 @@ package com.example.eatpal.presentation.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -10,8 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.eatpal.presentation.viewmodel.CaloriesTrackerViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +34,16 @@ fun AccountScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showEditCaloriesDialog by remember { mutableStateOf(false) }
+    var showEditWeightGoalDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
+
+    // Get current user info from Firebase
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val userEmail = currentUser?.email ?: "user@example.com"
+    val userName = getUserNameFromEmail(userEmail)
+
+    // Theme state
+    var isDarkTheme by remember { mutableStateOf(false) }
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -80,25 +90,25 @@ fun AccountScreen(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = Color.White,
-                                modifier = Modifier.size(50.dp)
+                            Text(
+                                text = userName.take(1).uppercase(),
+                                color = Color.White,
+                                fontSize = 40.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = "John Doe",
+                            text = userName,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1A1A1A)
                         )
 
                         Text(
-                            text = "john.doe@example.com",
+                            text = userEmail,
                             fontSize = 14.sp,
                             color = Color(0xFF666666),
                             modifier = Modifier.padding(top = 4.dp)
@@ -152,15 +162,7 @@ fun AccountScreen(
                         icon = Icons.Default.CheckCircle,
                         title = "Weight Goal",
                         subtitle = "Maintain current weight",
-                        onClick = { /* TODO */ },
-                        showDivider = true
-                    )
-
-                    AccountSettingItem(
-                        icon = Icons.Default.Person,
-                        title = "Activity Level",
-                        subtitle = "Moderately active",
-                        onClick = { /* TODO */ }
+                        onClick = { showEditWeightGoalDialog = true }
                     )
                 }
 
@@ -172,21 +174,12 @@ fun AccountScreen(
                     icon = Icons.Default.Settings
                 ) {
                     AccountSettingItem(
-                        icon = Icons.Default.Notifications,
-                        title = "Notifications",
-                        subtitle = "Daily reminders enabled",
-                        onClick = { /* TODO */ },
-                        showDivider = true
-                    )
-
-                    AccountSettingItem(
                         icon = Icons.Default.Settings,
                         title = "Theme",
-                        subtitle = "Light mode",
-                        onClick = { /* TODO */ },
+                        subtitle = if (isDarkTheme) "Dark mode" else "Light mode",
+                        onClick = { showThemeDialog = true },
                         showDivider = true
                     )
-
                     AccountSettingItem(
                         icon = Icons.Default.Settings,
                         title = "Language",
@@ -275,7 +268,7 @@ fun AccountScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.ExitToApp,
+                            Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Sign Out",
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
@@ -306,6 +299,36 @@ fun AccountScreen(
             }
         )
     }
+
+    if (showEditWeightGoalDialog) {
+        WeightGoalDialog(
+            onDismiss = { showEditWeightGoalDialog = false },
+            onSelect = { goal ->
+                // TODO: Save weight goal to user profile
+                showEditWeightGoalDialog = false
+            }
+        )
+    }
+
+    if (showThemeDialog) {
+        ThemeSelectionDialog(
+            isDarkTheme = isDarkTheme,
+            onDismiss = { showThemeDialog = false },
+            onSelect = { dark ->
+                isDarkTheme = dark
+                showThemeDialog = false
+                // TODO: Implement theme change across app
+            }
+        )
+    }
+}
+
+fun getUserNameFromEmail(email: String): String {
+    return email.substringBefore("@").split(".").joinToString(" ") { it.capitalize() }
+}
+
+fun String.capitalize(): String {
+    return this.replaceFirstChar { it.uppercase() }
 }
 
 @Composable
@@ -428,7 +451,7 @@ fun AccountSettingItem(
             }
 
             Icon(
-                Icons.Default.KeyboardArrowRight,
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Navigate",
                 tint = Color(0xFF999999),
                 modifier = Modifier.size(20.dp)
@@ -442,6 +465,80 @@ fun AccountSettingItem(
             )
         }
     }
+}
+
+@Composable
+fun ThemeSelectionDialog(
+    isDarkTheme: Boolean,
+    onDismiss: () -> Unit,
+    onSelect: (Boolean) -> Unit
+) {
+    val options = listOf("Light mode", "Dark mode")
+    var selectedIndex by remember { mutableStateOf(if (isDarkTheme) 1 else 0) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Choose Theme",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+            Column {
+                options.forEachIndexed { index, option ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedIndex = index }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedIndex == index,
+                            onClick = { selectedIndex = index },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = Color(0xFF4CAF50)
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = option,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = if (index == 0) Icons.Default.Star else Icons.Default.Star,
+                            contentDescription = option,
+                            tint = if (index == 0) Color(0xFFFF9800) else Color(0xFF3F51B5)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSelect(selectedIndex == 1) }
+            ) {
+                Text(
+                    text = "Apply",
+                    color = Color(0xFF4CAF50),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Cancel",
+                    color = Color(0xFF666666)
+                )
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(20.dp)
+    )
 }
 
 @Composable
@@ -514,6 +611,80 @@ fun EditCaloriesDialog(
                     color = if (!isError && calorieGoal.isNotBlank()) Color(0xFF4CAF50) else Color(
                         0xFFCCCCCC
                     ),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Cancel",
+                    color = Color(0xFF666666)
+                )
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(20.dp)
+    )
+}
+
+@Composable
+fun WeightGoalDialog(
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit
+) {
+    val options = listOf("Lose weight", "Maintain weight", "Gain weight")
+    var selectedOption by remember { mutableStateOf(options[1]) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Weight Goal",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Select your weight goal to help us optimize your calorie goals.",
+                    fontSize = 14.sp,
+                    color = Color(0xFF666666),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                options.forEach { option ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedOption = option }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedOption == option,
+                            onClick = { selectedOption = option },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = Color(0xFF4CAF50)
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = option,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSelect(selectedOption) }
+            ) {
+                Text(
+                    text = "Save",
+                    color = Color(0xFF4CAF50),
                     fontWeight = FontWeight.Bold
                 )
             }
