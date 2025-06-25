@@ -27,7 +27,6 @@ import com.example.eatpal.data.model.FoodItem
 import com.example.eatpal.data.repository.FoodRepository
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.HorizontalDivider
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,22 +72,15 @@ fun AddFoodScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(
+                text = "Add Food",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
             IconButton(onClick = onDismiss) {
                 Icon(Icons.Default.Close, contentDescription = "Close")
             }
-            Text(
-                text = "Add Food",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier
-                    .background(
-                        Color(0xFF4CAF50),
-                        RoundedCornerShape(8.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-            Spacer(modifier = Modifier.width(48.dp))
         }
 
         if (currentView == "list") {
@@ -178,6 +170,24 @@ fun FoodListView(
     var sortBy by remember { mutableStateOf("Most Relevant") }
     var showSortMenu by remember { mutableStateOf(false) }
     val sortOptions = listOf("Most Relevant", "Recently Added", "A-Z", "Z-A")
+    val foodRepository = remember { FoodRepository.getInstance() }
+
+    // First filter by tab (All vs Favourite), then apply sorting
+    val filteredAndSortedFoods = remember(foods, selectedTab, sortBy) {
+        // First filter by tab
+        val filteredFoods = when (selectedTab) {
+            "Favourite" -> foods.filter { food -> foodRepository.isFavorite(food) }
+            else -> foods // "All" shows all foods
+        }
+
+        // Then apply sorting
+        when (sortBy) {
+            "A-Z" -> filteredFoods.sortedBy { it.name.lowercase() }
+            "Z-A" -> filteredFoods.sortedByDescending { it.name.lowercase() }
+            "Recently Added" -> filteredFoods.sortedByDescending { it.id } // Assuming higher ID means more recent
+            else -> filteredFoods // "Most Relevant" - keep original order
+        }
+    }
 
     Column {
         // Search Bar
@@ -227,7 +237,7 @@ fun FoodListView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "${foods.size} Results",
+                "${filteredAndSortedFoods.size} Results",
                 fontWeight = FontWeight.Medium
             )
             Row(
@@ -266,11 +276,11 @@ fun FoodListView(
             }
         }
 
-        // Food Items
+        // Food Items - Use sortedFoods instead of foods
         LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
-            items(foods) { food ->
+            items(filteredAndSortedFoods) { food ->
                 FoodItemRow(
                     food = food,
                     onClick = { onFoodSelect(food) }
@@ -278,7 +288,7 @@ fun FoodListView(
             }
 
             // Empty state
-            if (foods.isEmpty() && !isLoading) {
+            if (filteredAndSortedFoods.isEmpty() && !isLoading) {
                 item {
                     Box(
                         modifier = Modifier
@@ -287,10 +297,11 @@ fun FoodListView(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (searchQuery.isNotEmpty())
-                                "No foods found for '$searchQuery'"
-                            else
-                                "No foods available",
+                            text = when {
+                                selectedTab == "Favourite" -> "No favorite foods yet\nTap the heart icon on food details to add favorites"
+                                searchQuery.isNotEmpty() -> "No foods found for '$searchQuery'"
+                                else -> "No foods available"
+                            },
                             color = Color.Gray,
                             textAlign = TextAlign.Center
                         )
@@ -673,39 +684,19 @@ fun FoodDetailView(
 
                             NutrientRow(
                                 "Fiber",
-                                "${
-                                    String.format(
-                                        "%.1f",
-                                        food.nutritionPer100g.fiber * servingMultiplier
-                                    )
-                                }g"
+                                "${String.format("%.1f", food.nutritionPer100g.fiber * servingMultiplier)}g"
                             )
                             NutrientRow(
                                 "Sugar",
-                                "${
-                                    String.format(
-                                        "%.1f",
-                                        food.nutritionPer100g.sugar * servingMultiplier
-                                    )
-                                }g"
+                                "${String.format("%.1f", food.nutritionPer100g.sugar * servingMultiplier)}g"
                             )
                             NutrientRow(
                                 "Sodium",
-                                "${
-                                    String.format(
-                                        "%.1f",
-                                        food.nutritionPer100g.sodium * servingMultiplier
-                                    )
-                                }mg"
+                                "${String.format("%.1f", food.nutritionPer100g.sodium * servingMultiplier)}mg"
                             )
                             NutrientRow(
                                 "Cholesterol",
-                                "${
-                                    String.format(
-                                        "%.1f",
-                                        food.nutritionPer100g.cholesterol * servingMultiplier
-                                    )
-                                }mg"
+                                "${String.format("%.1f", food.nutritionPer100g.cholesterol * servingMultiplier)}mg"
                             )
 
                             // Display vitamins and minerals if available
@@ -821,12 +812,9 @@ fun calculatePercentage(macroGrams: Double, totalCalories: Double): String {
     val caloriesFromMacro = when {
         macroGrams <= 0 -> 0.0
         else -> when {
-            // Protein: 4 calories per gram
-            // Carbs: 4 calories per gram
-            // Fat: 9 calories per gram
-            macroGrams.toString().contains("protein", ignoreCase = true) -> macroGrams * 4
-            macroGrams.toString().contains("carb", ignoreCase = true) -> macroGrams * 4
-            macroGrams.toString().contains("fat", ignoreCase = true) -> macroGrams * 9
+            "protein" in macroGrams.toString().lowercase() -> macroGrams * 4
+            "carb" in macroGrams.toString().lowercase() -> macroGrams * 4
+            "fat" in macroGrams.toString().lowercase() -> macroGrams * 9
             else -> macroGrams * 4 // Default to 4 calories per gram
         }
     }
