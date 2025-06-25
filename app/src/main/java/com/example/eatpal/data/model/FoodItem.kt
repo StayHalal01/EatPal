@@ -10,7 +10,7 @@ data class FoodItem(
     val servingSize: String = "1 serving",
     val amount: Double = 1.0,
     val nutritionInfo: NutritionInfo = NutritionInfo(),
-    val dateAdded: Long = System.currentTimeMillis() // Add this field
+    val dateAdded: Long = System.currentTimeMillis()
 )
 
 data class NutritionInfo(
@@ -31,7 +31,8 @@ data class FoodDatabase(
     val servingSizes: List<ServingSize> = listOf(ServingSize("each", 44.0)),
     val nutritionPer100g: NutritionInfo = NutritionInfo(),
     val category: String = "Food",
-    val dateAdded: Long = System.currentTimeMillis()
+    val dateAdded: Long = System.currentTimeMillis(),
+    val photoUrl: String? = null
 )
 
 data class ServingSize(
