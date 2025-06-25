@@ -1,5 +1,6 @@
 package com.example.eatpal.presentation.ui.sections
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,9 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.eatpal.R
 import com.example.eatpal.data.model.ExerciseItem
 import com.example.eatpal.data.model.FoodItem
 
@@ -112,7 +115,7 @@ fun FoodContent(
     Column {
         // Water intake
         DiaryItem(
-            icon = Icons.Default.Home,
+            icon = R.drawable.water,
             title = "Water",
             subtitle = "$waterIntake / 64 fl oz",
             calories = null,
@@ -125,7 +128,7 @@ fun FoodContent(
         // Breakfast
         val breakfastItems = foodItems.filter { it.category == "Breakfast" }
         DiaryItem(
-            icon = Icons.Default.Star,
+            icon = R.drawable.breakfast,
             title = "Breakfast",
             subtitle = if (breakfastItems.isNotEmpty())
                 breakfastItems.joinToString(", ") { it.name }
@@ -146,7 +149,7 @@ fun FoodContent(
         // Lunch
         val lunchItems = foodItems.filter { it.category == "Lunch" }
         DiaryItem(
-            icon = Icons.Default.FavoriteBorder,
+            icon = R.drawable.lunch,
             title = "Lunch",
             subtitle = if (lunchItems.isNotEmpty())
                 lunchItems.joinToString(", ") { it.name }
@@ -167,7 +170,7 @@ fun FoodContent(
         // Dinner
         val dinnerItems = foodItems.filter { it.category == "Dinner" }
         DiaryItem(
-            icon = Icons.Default.Place,
+            icon = R.drawable.dinner,
             title = "Dinner",
             subtitle = if (dinnerItems.isNotEmpty())
                 dinnerItems.joinToString(", ") { it.name }
@@ -188,7 +191,7 @@ fun FoodContent(
         // Snack
         val snackItems = foodItems.filter { it.category == "Snack" }
         DiaryItem(
-            icon = Icons.Default.Favorite,
+            icon = R.drawable.snack,
             title = "Snack",
             subtitle = if (snackItems.isNotEmpty())
                 snackItems.joinToString(", ") { it.name }
@@ -226,12 +229,11 @@ fun ExerciseContent(
 ) {
     Column {
         exercises.forEach { exercise ->
-            DiaryItem(
+            ExerciseDiaryItem(
                 icon = Icons.Default.PlayArrow,
                 title = exercise.name,
                 subtitle = "${exercise.duration} minutes",
                 calories = exercise.caloriesBurned,
-                onAdd = null,
                 onRemove = { onRemoveExercise(exercise.id) }
             )
         }
@@ -256,40 +258,9 @@ fun ExerciseContent(
     }
 }
 
-// Keep the original FoodDiarySection for backward compatibility
-@Composable
-fun FoodDiarySection(
-    foodItems: List<FoodItem>,
-    waterIntake: Int,
-    onAddFood: (String) -> Unit,
-    onUpdateWater: (Int) -> Unit,
-    onRemoveFood: (String) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                "EAT",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            FoodContent(
-                foodItems = foodItems,
-                waterIntake = waterIntake,
-                onAddFood = onAddFood,
-                onUpdateWater = onUpdateWater,
-                onRemoveFood = onRemoveFood
-            )
-        }
-    }
-}
-
 @Composable
 fun DiaryItem(
-    icon: ImageVector,
+    icon: Int,
     title: String,
     subtitle: String,
     calories: Int?,
@@ -302,8 +273,8 @@ fun DiaryItem(
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            icon,
+        Image(
+            painter = painterResource(id = icon),
             contentDescription = title,
             modifier = Modifier.size(40.dp)
         )
@@ -353,6 +324,54 @@ fun DiaryItem(
 }
 
 @Composable
+fun ExerciseDiaryItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    calories: Int?,
+    onRemove: (() -> Unit)?
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            modifier = Modifier.size(40.dp)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium)
+            Text(subtitle, fontSize = 14.sp, color = Color.Gray)
+            calories?.let {
+                Text("$it kcal", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+
+        onRemove?.let {
+            IconButton(
+                onClick = it,
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(Color.Red, CircleShape)
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun FoodItemRow(
     food: FoodItem,
     onRemove: () -> Unit
@@ -376,6 +395,37 @@ fun FoodItemRow(
                 Icons.Default.Close,
                 contentDescription = "Remove ${food.name}",
                 tint = Color.Red
+            )
+        }
+    }
+}
+
+// Keep the original FoodDiarySection for backward compatibility
+@Composable
+fun FoodDiarySection(
+    foodItems: List<FoodItem>,
+    waterIntake: Int,
+    onAddFood: (String) -> Unit,
+    onUpdateWater: (Int) -> Unit,
+    onRemoveFood: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "EAT",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            FoodContent(
+                foodItems = foodItems,
+                waterIntake = waterIntake,
+                onAddFood = onAddFood,
+                onUpdateWater = onUpdateWater,
+                onRemoveFood = onRemoveFood
             )
         }
     }
